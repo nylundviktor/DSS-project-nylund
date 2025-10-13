@@ -1,6 +1,5 @@
 # large data files
-data/users.csv
-data/recommendations.csv
+data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
