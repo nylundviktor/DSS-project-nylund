@@ -103,7 +103,6 @@ if __name__ == '__main__':
     train_data = []
     test_data = []
 
-    '''
     # group() is faster
     for user_id, user_ratings in recommender.recommendations_df.groupby('user_id'):
         if len(user_ratings) < 2:
@@ -114,9 +113,9 @@ if __name__ == '__main__':
         train_data.append(train)
         test_data.append(test)
 
-    '''
     print(recommender.recommendations_df['user_id'].nunique())
 
+    '''
     for user_id in recommender.recommendations_df['user_id'].unique()[:50]:
         user_ratings = recommender.recommendations_df[ recommender.recommendations_df['user_id'] == user_id ]
         if len(user_ratings) < 2:
@@ -126,6 +125,7 @@ if __name__ == '__main__':
         train, test = train_test_split(user_ratings, test_size=0.2, random_state=42)
         train_data.append(train)
         test_data.append(test)
+    '''
 
     train_df = pd.concat(train_data)
     test_df = pd.concat(test_data)

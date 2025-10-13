@@ -1,3 +1,7 @@
+# large data files
+data/users.csv
+data/recommendations.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
