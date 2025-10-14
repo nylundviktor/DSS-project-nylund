@@ -7,6 +7,7 @@ from sklearn.decomposition import NMF
 from sklearn.model_selection import train_test_split
 
 class Recommender:
+    # Collaborative filtering (user interaction data, finds games from patterns between users)
     def __init__(self, games_data_path, recommendations_data_path):
         self.games_df = pd.read_csv(games_data_path)
         self.recommendations_df = pd.read_csv(recommendations_data_path)
@@ -19,6 +20,7 @@ class Recommender:
             self.games_df['positive_ratio'].astype(str) + ' ' +
             self.games_df['win'].apply(lambda x: 'win' if x else '') + ' ' +
             self.games_df['mac'].apply(lambda x: 'mac' if x else '') + ' ' +
+            self.games_df['price_final'].astype(str) + ' ' +
             self.games_df['linux'].apply(lambda x: 'linux' if x else '')
         )
 
@@ -53,7 +55,7 @@ class Recommender:
         unique_recs = list(dict.fromkeys(combined_recs).keys())
         return unique_recs[:num_recommendations]
 
-
+    # Content based filtering (attributes and features, finds similar games)
     class _ContentBasedRecommender:
         def __init__(self, games_df): 
             self.games_df = games_df
@@ -91,13 +93,15 @@ if __name__ == '__main__':
     user_counts = recommender.recommendations_df['user_id'].value_counts()
 
     # Filter users with at least 3 ratings
-    active_users = user_counts[user_counts >= 3].index
+    active_users = user_counts[user_counts >= 5].index
 
     # Filter recommendations to only include those users
     filtered_recommendations = recommender.recommendations_df[
         recommender.recommendations_df['user_id'].isin(active_users)
     ]
     recommender.recommendations_df = filtered_recommendations
+
+    print(f"Rows left: {len(filtered_recommendations)}")
 
     # REMINDER fit with training data = recommendations
     train_data = []
