@@ -6,6 +6,27 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.decomposition import NMF
 from sklearn.model_selection import train_test_split
 
+def reviews_to_category(n):
+    if n < 100:
+        return 'few_reviews'
+    elif n < 1000:
+        return 'some_reviews'
+    elif n < 10000:
+        return 'many_reviews'
+    else:
+        return 'popular'
+
+def price_to_category(price):
+    if price == 0:
+        return 'free'
+    elif price < 5:
+        return 'cheap'
+    elif price < 20:
+        return 'midrange'
+    else:
+        return 'expensive'
+
+
 class Recommender:
     # Collaborative filtering (user interaction data, finds games from patterns between users)
     def __init__(self, games_data_path, recommendations_data_path):
@@ -18,9 +39,11 @@ class Recommender:
         self.games_df['features'] = (
             self.games_df['rating'].fillna('') + ' ' +
             self.games_df['positive_ratio'].astype(str) + ' ' +
+            self.games_df['price_final'].apply(price_to_category) + ' ' +
+            self.games_df['user_reviews'].apply(reviews_to_category) + ' ' +
+            self.games_df['discount'].apply(lambda d: 'discounted' if d > 0 else 'full_price') + ' ' +
             self.games_df['win'].apply(lambda x: 'win' if x else '') + ' ' +
             self.games_df['mac'].apply(lambda x: 'mac' if x else '') + ' ' +
-            self.games_df['price_final'].astype(str) + ' ' +
             self.games_df['linux'].apply(lambda x: 'linux' if x else '')
         )
 
