@@ -1,4 +1,13 @@
 pandas
+numpy
+scipy
 scikit-learn
 
-pytest
+#pytest
+#optuna
+#gymnasium
+#matplotlib
+#matplotlib-inline 
+#torch
+#torchvision
+#stable_baselines3
