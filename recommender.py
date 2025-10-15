@@ -62,6 +62,36 @@ class Recommender:
         unique_recs = [r for r in dict.fromkeys(combined_recs).keys() if r != game_title_seed]
         return unique_recs[:num_recommendations]
     
+
+    # Content based filtering (attributes and features, finds similar games)
+    class ContentBasedRecommender:
+        def __init__(self, games_df): 
+            self.games_df = games_df
+            self.tfidf_matrix = None
+            self.game_indices = None
+        
+        def fit(self):
+            self.games_df['features'] = self.games_df['features'].fillna('')
+            tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+            self.tfidf_matrix = tfidf_vectorizer.fit_transform(self.games_df['features'])
+            self.game_indices = pd.Series(self.games_df.index, index=self.games_df['title']).drop_duplicates()
+        
+        def recommend(self, game_title, num_recommendations=10):
+            if game_title not in self.game_indices: 
+                return []
+            game_index = self.game_indices[game_title]
+            game_vector = self.tfidf_matrix[game_index]
+            similarity_scores = cosine_similarity(game_vector, self.tfidf_matrix).flatten()
+            
+            game_similarity_list = list(enumerate(similarity_scores))
+            sorted_similar_games = sorted(game_similarity_list, key=lambda x: x[1], reverse=True)
+            
+            top_game_indices = [i[0] for i in sorted_similar_games]
+            recommended_titles = self.games_df['title'].iloc[top_game_indices].tolist()
+            recommended_titles = [title for title in recommended_titles if title != game_title]
+
+            return recommended_titles[:num_recommendations]
+        
     
     # Collaborative filtering (user interaction data, finds games from patterns between users)
     class CollaborativeRecommender:
@@ -99,7 +129,7 @@ class Recommender:
             if user_id in self.user_mapper:
                 #user_idx = self.user_mapper[user_id]
                 #user_vector = self.user_item_matrix.loc[user_idx].values.reshape(1, -1)
-                user_vector = self.user_item_matrix.loc[user_id].values.reshape(1, -1)
+                user_vector = self.user_item_matrix.loc[user_id].to_numpy().reshape(1, -1)
                 user_P = self.nmf_model.transform(user_vector)
                 item_Q = self.nmf_model.components_
                 predicted_scores = np.dot(user_P, item_Q).flatten()
@@ -111,31 +141,25 @@ class Recommender:
             return collaborative_recs
 
 
-    # Content based filtering (attributes and features, finds similar games)
-    class ContentBasedRecommender:
-        def __init__(self, games_df): 
-            self.games_df = games_df
-            self.tfidf_matrix = None
-            self.game_indices = None
-        
-        def fit(self):
-            self.games_df['features'] = self.games_df['features'].fillna('')
-            tfidf_vectorizer = TfidfVectorizer(stop_words='english')
-            self.tfidf_matrix = tfidf_vectorizer.fit_transform(self.games_df['features'])
-            self.game_indices = pd.Series(self.games_df.index, index=self.games_df['title']).drop_duplicates()
-        
-        def recommend(self, game_title, num_recommendations=10):
-            if game_title not in self.game_indices: 
-                return []
-            game_index = self.game_indices[game_title]
-            game_vector = self.tfidf_matrix[game_index]
-            similarity_scores = cosine_similarity(game_vector, self.tfidf_matrix).flatten()
-            
-            game_similarity_list = list(enumerate(similarity_scores))
-            sorted_similar_games = sorted(game_similarity_list, key=lambda x: x[1], reverse=True)
-            
-            top_game_indices = [i[0] for i in sorted_similar_games[1:num_recommendations + 1]]
-            return self.games_df['title'].iloc[top_game_indices].tolist()
+def weighted_hybrid_recommender(user_id, base_game, num_recs=10, alpha=0.7):
+    collab_list = recommender.collaborative_recommender.recommend(user_id, num_recs*2)
+    content_list = recommender.content_recommender.recommend(base_game, num_recs*2)
+    
+    # simple inverse-rank scores
+    collab_scores = {game: 1/(i+1) for i, game in enumerate(collab_list)}
+    content_scores = {game: 1/(i+1) for i, game in enumerate(content_list)}
+    
+    combined_scores = {}
+    for game in set(collab_scores) | set(content_scores):
+        c_score = collab_scores.get(game, 0)
+        cb_score = content_scores.get(game, 0)
+        combined_scores[game] = alpha * c_score + (1 - alpha) * cb_score
+    
+    sorted_games = sorted(combined_scores, key=combined_scores.get, reverse=True)
+    # filter out seed game and limit results
+    filtered = [g for g in sorted_games if g != base_game]
+    return filtered[:num_recs]
+
 
 
 if __name__ == '__main__':
@@ -145,16 +169,19 @@ if __name__ == '__main__':
         recommendations_data_path='./data/recommendations.csv'
     )
 
+    test_user_id = 4616950
+    test_game_title="LIMBO"
+
     # sample 1, filtered
     user_counts = recommender.recommendations_df['user_id'].value_counts()
-    print(f"User left: {len(user_counts)}")
+    print(f"User in data: {len(user_counts)}")
     active_users = user_counts[user_counts >= 10].index
     filtered_sample = active_users.to_series().sample(n=60000, random_state=42)
+    filtered_sample = pd.concat([filtered_sample, pd.Series([test_user_id])]).drop_duplicates()
     filtered_recommendations = recommender.recommendations_df[
         recommender.recommendations_df['user_id'].isin(filtered_sample)
     ]
     print(f"After filtering: {len(filtered_recommendations)}")
-    
     # sample 2, random
     all_users = user_counts.index
     random_users = all_users.to_series().sample(n=10000, random_state=42)
@@ -164,7 +191,7 @@ if __name__ == '__main__':
     # Combine samples
     combined_sample = pd.concat([filtered_recommendations, random_sample]).drop_duplicates()
     recommender.recommendations_df = combined_sample
-    print(f"Combined sample size (rows): {len(combined_sample)}")
+    print(f"Combined sample size: {len(combined_sample)}")
     print(f"Unique users in combined sample: {combined_sample['user_id'].nunique()}")
     train_data = []
     test_data = []
@@ -184,20 +211,30 @@ if __name__ == '__main__':
 
     recommender.fit(train_df)
 
-    test_user_id=2586
-    test_game_title="LIMBO"
-
-    print(f"\n---Content-Based Recommendations for user {test_user_id} based on '{test_game_title}'---")
-    print(recommender.content_recommender(test_game_title))
-
-    print(f"\n---Collaborative Recommendations for user {test_user_id} based on '{test_game_title}'---")
-    print(recommender.collaborative_recommender.recommend(test_user_id))
-
-    recommendations = recommender.recommend(test_user_id, test_game_title)
-
-    if recommendations:
-        print(f"\n---Recommendations for user {test_user_id} based on '{test_game_title}'---")
-        for _recommendation in recommendations:
-            print(f"- {_recommendation}")
+    user_interactions = recommender.recommendations_df[recommender.recommendations_df['user_id'] == test_user_id]
+    print(f"User {test_user_id} reviews: {len(user_interactions)}")
+    if test_user_id in recommender.collaborative_recommender.user_mapper:
+        print(f"User {test_user_id} is known to the collaborative model.")
     else:
-        print("No recommendations found.")
+        print(f"User {test_user_id} NOT found in collaborative model.")
+
+
+    print(f"\n---Content-Based Recommendations based on '{test_game_title}'---")
+    content_recs = recommender.content_recommender.recommend(test_game_title)
+    for _rec in content_recs:
+        print(f"- {_rec}")
+
+    print(f"\n---Collaborative Recommendations for user {test_user_id}---")
+    collaborative_recs = recommender.collaborative_recommender.recommend(test_user_id)
+    for _rec in collaborative_recs:
+        print(f"- {_rec}")
+
+    print(f"\n---Recommendations for user {test_user_id} based on '{test_game_title}'---")
+    hybrid_recs = recommender.recommend(test_user_id, test_game_title)
+    for _rec in hybrid_recs:
+        print(f"- {_rec}")
+
+    print(f"\n---Weighted Hybrid Recommendations for user {test_user_id} based on '{test_game_title}'---")
+    whybrid_recs = weighted_hybrid_recommender(test_user_id, test_game_title)
+    for rec in whybrid_recs:
+        print(f"- {rec}")
