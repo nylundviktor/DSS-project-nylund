@@ -32,8 +32,8 @@ class Recommender:
         self.games_df = pd.read_csv(games_data_path)
         self.recommendations_df = pd.read_csv(recommendations_data_path)
 
-        self.content_recommender = self._ContentBasedRecommender(self.games_df)
-        self.collaborative_recommender = self._CollaborativeRecommender(self.games_df, self.recommendations_df)
+        self.content_recommender = self.ContentBasedRecommender(self.games_df)
+        self.collaborative_recommender = self.CollaborativeRecommender(self.games_df, self.recommendations_df)
     
         self.recommendations_df['is_recommended'] = self.recommendations_df['is_recommended'].astype(int)
         # 'features' column from game attributes (rating, positive ratio, platforms)
@@ -64,14 +64,14 @@ class Recommender:
     
     
     # Collaborative filtering (user interaction data, finds games from patterns between users)
-    class _CollaborativeRecommender:
+    class CollaborativeRecommender:
         def __init__(self, games_df, recommendations_df):
             self.games_df = games_df
             self.recommendations_df = recommendations_df
 
             self.nmf_model = None; self.user_item_matrix = None
             self.user_mapper = None; self.game_mapper = None
-            self.game_inv_mapper = None
+            #self.game_inv_mapper = None
 
         def fit(self, recs_train_df):
             self.recs_train_df = recs_train_df # recommendations, user-game interaction
@@ -97,8 +97,9 @@ class Recommender:
         def recommend(self, user_id, num_recommendations=10):
             collaborative_recs = []
             if user_id in self.user_mapper:
-                user_idx = self.user_mapper[user_id]
-                user_vector = self.user_item_matrix.loc[user_idx].values.reshape(1, -1)
+                #user_idx = self.user_mapper[user_id]
+                #user_vector = self.user_item_matrix.loc[user_idx].values.reshape(1, -1)
+                user_vector = self.user_item_matrix.loc[user_id].values.reshape(1, -1)
                 user_P = self.nmf_model.transform(user_vector)
                 item_Q = self.nmf_model.components_
                 predicted_scores = np.dot(user_P, item_Q).flatten()
@@ -111,7 +112,7 @@ class Recommender:
 
 
     # Content based filtering (attributes and features, finds similar games)
-    class _ContentBasedRecommender:
+    class ContentBasedRecommender:
         def __init__(self, games_df): 
             self.games_df = games_df
             self.tfidf_matrix = None
@@ -135,12 +136,6 @@ class Recommender:
             
             top_game_indices = [i[0] for i in sorted_similar_games[1:num_recommendations + 1]]
             return self.games_df['title'].iloc[top_game_indices].tolist()
-        
-    def get_content_based_recommendations(self, game_title, num_recommendations=10):
-        # Fit the content-based recommender (in case it's not fitted yet)
-        self.content_recommender.fit()
-        # Get recommendations
-        return self.content_recommender.recommend(game_title, num_recommendations)
 
 
 if __name__ == '__main__':
@@ -150,9 +145,9 @@ if __name__ == '__main__':
         recommendations_data_path='./data/recommendations.csv'
     )
 
+    # sample 1, filtered
     user_counts = recommender.recommendations_df['user_id'].value_counts()
     print(f"User left: {len(user_counts)}")
-    # sample 1, filtered
     active_users = user_counts[user_counts >= 10].index
     filtered_sample = active_users.to_series().sample(n=60000, random_state=42)
     filtered_recommendations = recommender.recommendations_df[
@@ -189,22 +184,20 @@ if __name__ == '__main__':
 
     recommender.fit(train_df)
 
-
     test_user_id=2586
     test_game_title="LIMBO"
 
-    content_recs = recommender.get_content_based_recommendations(test_game_title, 10)
-    print(f"Content-based recommendations for '{test_game_title}':")
-    for rec in content_recs:
-        print("-", rec)
-    
-    '''
+    print(f"\n---Content-Based Recommendations for user {test_user_id} based on '{test_game_title}'---")
+    print(recommender.content_recommender(test_game_title))
+
+    print(f"\n---Collaborative Recommendations for user {test_user_id} based on '{test_game_title}'---")
+    print(recommender.collaborative_recommender.recommend(test_user_id))
+
     recommendations = recommender.recommend(test_user_id, test_game_title)
 
     if recommendations:
-        print(f"\nRecommendations for user {test_user_id} based on '{test_game_title}':")
+        print(f"\n---Recommendations for user {test_user_id} based on '{test_game_title}'---")
         for _recommendation in recommendations:
             print(f"- {_recommendation}")
     else:
         print("No recommendations found.")
-    '''
