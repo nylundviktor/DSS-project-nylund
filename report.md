@@ -6,7 +6,7 @@
 - resultat, screenshot/kodblock
 - reflektion, jag lärde mig.., jag tycker..,
 
-## Innehållsförteckning
+## Innehåll
 
 - [Process](#process)
  - [Innehållsbaserad filtreringen](#innehållsbaserad-filtreringen)
@@ -60,7 +60,7 @@ Det behövs evaluering för att veta säkert om detta är bättre eller inte. De
 
 **Första Hybrid (halvt söndrig)**
 
-<img src="images/out2.png" alt="Screenshot of second output" width="700"/>
+<img src="images/out2.png" alt="Screenshot of second output" width="500"/>
 
 Förändringarna ovan gjorde programet mycket snabbare att köra. Det krävdes bara 2-3 minuter.  
 Vid första anblick blir jag dock något oroad att rekommendationssystemet försämrats, men många av spelen i listan är obekanta för mig. 
@@ -68,7 +68,7 @@ T.ex. finns inte `The Binding of Isaac` kvar i listan, som var en passande rekom
 AI menade att `discount` kan vara en vilseledande feature, så jag exkluderade den. Jag ändrade också andelen data som samplades på måfå från 1/4 till 1/6. Detta så att andelen slumpad data inte har för stor inverkan. Jag ökade även gränsen för ratings till minst 10 per användare, vilket krävde att jag minskade mängden använd data en aning.  
 Resultatet var nära på det samma.
 
-<img src="images/out3.png" alt="Screenshot of third output" width="700"/>
+<img src="images/out3.png" alt="Screenshot of third output" width="500"/>
 
 I detta skede modulariserade jag koden helt så att jag kunde köra båda funktionerna separat lättare.
 
@@ -85,26 +85,26 @@ Här ser vi att användaren har väldigt få rader med rekommendationer. Använd
 
 **Innehållsbaserad rekommendation**
 
-<img src="images/out4.png" alt="Screenshot of content based output" width="700"/>
+<img src="images/out4.png" alt="Screenshot of content based output" width="500"/>
 
 Skillnaden beror endast på att det nu printar 10 rekommendationer, som det borde göra. Annars är 
 
 **Kollaborativ rekommendation**
 
-<img src="images/out5.png" alt="Screenshot of collaborative output" width="700"/>
+<img src="images/out5.png" alt="Screenshot of collaborative output" width="500"/>
 
 Här ser vi helt andra typer av spel, som borde vara helt baserade på användarens tidigare recensioner. 
 
 **Andra Hybrid (fixad)**
 
-<img src="images/out6.png" alt="Screenshot of hybrid output" width="700"/>
+<img src="images/out6.png" alt="Screenshot of hybrid output" width="500"/>
 
 Här ser vi precis samma spel som i den kollaborativa filtreringen. Detta p.g.a. att denna lista lägs till först och de innehållsbaserade rekommendationerna lägs till därefter. Detta är en simpel hybrid model.  
 AI gav detta som enkelt förslag på en viktad rekommenderare som "blandar" listorna.
 
 <img src="images/code3.png" alt="Screenshot of weighted hybrid code" width="700"/>
 
-<img src="images/out7.png" alt="Screenshot of weighted hybrid output" width="700"/>
+<img src="images/out7.png" alt="Screenshot of weighted hybrid output" width="500"/>
 
 Här syns 7 nya spel, vilket är som förväntat från `alpha = 0.7`. 
 
@@ -114,17 +114,18 @@ För evalueringen behövde jag öka antalet iterationer från 200 upp till 500 o
 Jag övervägde att byta till `solver='cd'`, men den påstås vara mer lämpad för tät data utan stor variation. Det skulle alltså antagligen inte vara bättre, trots att den vore snabbare. `solver='mu'` är bättre lämpad för data som har "a lot of variety or sparsity".  
 Enligt AI vore `init='nndsvda'` betydligt snabbare och också ge bättre rekommendationer. Därför böt jag till det och träningen tar nu .  
 Jag minskade även `n_components` till 15 från 20, vilket borde göra det snabbare men lite mindre "detaljerade" rekommendationer.
+Träningen når maximala antalet iterationer väldigt snabbt och får alltså inte bättre convergence. 
 
-<img src="images/res1.png" alt="Screenshot of final hybrid output" width="700"/>
+<img src="images/res1.png" alt="Screenshot of final hybrid output" width="500"/>
 
 Största delen av spelen är samma som tidigare, men den nya modellen har hittat 2 nya spel att rekommendera.
 
 | Mått                   | Värde      | Förändring   |
 |------------------------|------------|--------------|
 | Användare              | 13,781,059 | -            |
-| >=10 rekommendationer  | 1,276,399  | -509,880     |
-| Kombinerad data        | 1,305,241  | -520,001     |
-| Unika användare        | 69,961     | -27,975      |
+| >=10 rekommendationer  | 766,519    | -509,880     |
+| Kombinerad data        | 784,240    | -520,001     |
+| Unika användare        | 41,986     | -27,975      |
 
 
 ---
