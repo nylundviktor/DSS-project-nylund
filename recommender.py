@@ -116,7 +116,13 @@ class Recommender:
             self.user_mapper = {uid: i for i, uid in enumerate(pivot.index)}
             self.game_mapper = {mid: i for i, mid in enumerate(pivot.columns)}
 
-            self.nmf_model = NMF(n_components=20, init='random', solver='mu', random_state=42, max_iter=200)
+            # init='random' / init='nndsvda'
+            self.nmf_model = NMF(
+                n_components=15, 
+                init='nndsvda', 
+                solver='mu', 
+                random_state=42, 
+                max_iter=500)
             self.nmf_model.fit(pivot_sparse)
             #self.user_mapper = {uid: i for i, uid in enumerate(self.user_item_matrix.index)}
             #self.game_mapper = {mid: i for i, mid in enumerate(self.user_item_matrix.columns)}
@@ -168,6 +174,7 @@ class Evaluator:
 
     def fit_recommender(self, train_df, test_df):
         """Fits the recommender and pre-calculates necessary data for evaluation."""
+        print("\n---Start evaluation---")
         print("Fitting the recommender model...")
         self.train_df = train_df
         self.test_df = test_df
@@ -305,7 +312,7 @@ if __name__ == '__main__':
     user_counts = recommender.recommendations_df['user_id'].value_counts()
     print(f"User in data: {len(user_counts)}")
     active_users = user_counts[user_counts >= 10].index
-    filtered_sample = active_users.to_series().sample(n=60000, random_state=42)
+    filtered_sample = active_users.to_series().sample(n=36000, random_state=42)
     filtered_sample = pd.concat([filtered_sample, pd.Series([test_user_id])]).drop_duplicates()
     filtered_recommendations = recommender.recommendations_df[
         recommender.recommendations_df['user_id'].isin(filtered_sample)
@@ -313,7 +320,7 @@ if __name__ == '__main__':
     print(f"After filtering: {len(filtered_recommendations)}")
     # sample 2, random
     all_users = user_counts.index
-    random_users = all_users.to_series().sample(n=10000, random_state=42)
+    random_users = all_users.to_series().sample(n=6000, random_state=42)
     random_sample = recommender.recommendations_df[
         recommender.recommendations_df['user_id'].isin(random_users)
     ]
@@ -358,15 +365,17 @@ if __name__ == '__main__':
     for _rec in collaborative_recs:
         print(f"- {_rec}")
 
-    print(f"\n---Recommendations for user {test_user_id} based on '{test_game_title}'---")
+    print(f"\n---Hybrid Recommendations for user {test_user_id} based on '{test_game_title}'---")
     hybrid_recs = recommender.recommend(test_user_id, test_game_title)
     for _rec in hybrid_recs:
         print(f"- {_rec}")
 
+    '''
     print(f"\n---Weighted Hybrid Recommendations for user {test_user_id} based on '{test_game_title}'---")
     whybrid_recs = weighted_hybrid_recommender(test_user_id, test_game_title)
     for rec in whybrid_recs:
         print(f"- {rec}")
+    '''
 
     evaluator = Evaluator(recommender)
     evaluator.fit_recommender(train_df, test_df)

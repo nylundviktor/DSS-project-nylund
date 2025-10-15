@@ -76,12 +76,12 @@ I detta skede modulariserade jag koden helt så att jag kunde köra båda funkti
 
 Här ser vi att användaren har väldigt få rader med rekommendationer. Användare `4616950` med 36 recensioner är bättre lämpad. Jag såg även till att manuellt sätta med användaren i mitt testdata. 
 
-| Metric                  | Value      |
-|-------------------------|------------|
-| Användare               | 13,781,059 |
-| >=10 rekommendationer   | 1,276,399  |
-| Kombinerad data         | 1,305,241  |
-| Unika användare         | 69,961     |
+| Mått                   | Värde      | Förändring  |
+|------------------------|------------|-------------|
+| Användare              | 13,781,059 | -           |
+| >=10 rekommendationer  | 1,276,399  | +397,188    |
+| Kombinerad data        | 1,305,241  | +352,715    |
+| Unika användare        | 69,961     | -29,883     |
 
 **Innehållsbaserad rekommendation**
 
@@ -110,9 +110,25 @@ Här syns 7 nya spel, vilket är som förväntat från `alpha = 0.7`.
 
 ## Evaluering
 
+För evalueringen behövde jag öka antalet iterationer från 200 upp till 500 och mängen data ner till 42k från 60k för att få bättre convergence. Då tog träningen och evaluearingen märkbart längre tid, nu över 30 minuter.  
+Jag övervägde att byta till `solver='cd'`, men den påstås vara mer lämpad för tät data utan stor variation. Det skulle alltså antagligen inte vara bättre, trots att den vore snabbare. `solver='mu'` är bättre lämpad för data som har "a lot of variety or sparsity".  
+Enligt AI vore `init='nndsvda'` betydligt snabbare och också ge bättre rekommendationer. Därför böt jag till det och träningen tar nu .  
+Jag minskade även `n_components` till 15 från 20, vilket borde göra det snabbare men lite mindre "detaljerade" rekommendationer.
 
+<img src="images/res1.png" alt="Screenshot of final hybrid output" width="700"/>
+
+Största delen av spelen är samma som tidigare, men den nya modellen har hittat 2 nya spel att rekommendera.
+
+| Mått                   | Värde      | Förändring   |
+|------------------------|------------|--------------|
+| Användare              | 13,781,059 | -            |
+| >=10 rekommendationer  | 1,276,399  | -509,880     |
+| Kombinerad data        | 1,305,241  | -520,001     |
+| Unika användare        | 69,961     | -27,975      |
 
 
 ---
 
+Projektet var ett intressant sätt att slå ihop de senaste par projekten. Förstås hade det varit betydligt mer krävande ifall de uppgifterna inte hade gått så bra, men å andra sidan fick vi kod för det mesta förutom evalueringen.
 
+Det hade ändå varit uppskattat att få någon som helst feedback på de sista par uppgifterna före kursprojektet, så att man lättare kunde lita på vad man åstadkommit dittills. 
