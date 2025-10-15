@@ -85,26 +85,26 @@ Här ser vi att användaren har väldigt få rader med rekommendationer. Använd
 
 **Innehållsbaserad rekommendation**
 
-<img src="images/out4.png" alt="Screenshot of fourth output" width="700"/>
+<img src="images/out4.png" alt="Screenshot of content based output" width="700"/>
 
 Skillnaden beror endast på att det nu printar 10 rekommendationer, som det borde göra. Annars är 
 
 **Kollaborativ rekommendation**
 
-<img src="images/out5.png" alt="Screenshot of fifth output" width="700"/>
+<img src="images/out5.png" alt="Screenshot of collaborative output" width="700"/>
 
 Här ser vi helt andra typer av spel, som borde vara helt baserade på användarens tidigare recensioner. 
 
 **Andra Hybrid (fixad)**
 
-<img src="images/out6.png" alt="Screenshot of sixth output" width="700"/>
+<img src="images/out6.png" alt="Screenshot of hybrid output" width="700"/>
 
 Här ser vi precis samma spel som i den kollaborativa filtreringen. Detta p.g.a. att denna lista lägs till först och de innehållsbaserade rekommendationerna lägs till därefter. Detta är en simpel hybrid model.  
 AI gav detta som enkelt förslag på en viktad rekommenderare som "blandar" listorna.
 
 <img src="images/code3.png" alt="Screenshot of weighted hybrid code" width="700"/>
 
-
+<img src="images/out7.png" alt="Screenshot of weighted hybrid output" width="700"/>
 
 Här syns 7 nya spel, vilket är som förväntat från `alpha = 0.7`. 
 
