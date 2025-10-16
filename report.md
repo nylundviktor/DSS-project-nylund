@@ -10,6 +10,7 @@
  - [Hybrid rekommendation](#hybrid-rekommendation)
 - [Resultat](#resultat)
 - [Evaluering](#evaluering)
+- [Reflektion](#reflektion)
 
 ## Process
 
@@ -26,7 +27,7 @@ Jag kombinerar dessa för att skapa ett hybridsystem som använder sig av båda 
 På grund av storleken på users filen (13781059 users) tog programet rätt så länge att köra.  
 Detta var resultaten när jag begränsade det till att endast använda 50 users data. 
 
-<img src="images/out1.png" alt="Screenshot of first output" width="700"/>
+<img src="images/out1.png" alt="Screenshot of first output" width="500"/>
 
 <img src="images/code1.png" alt="Screenshot of filtering code" width="700"/>
 
@@ -68,7 +69,7 @@ Resultatet var nära på det samma.
 
 I detta skede modulariserade jag koden helt så att jag kunde köra båda funktionerna separat lättare.
 
-<img src="images/user1.png" alt="Screenshot of bad user" width="700"/>
+<img src="images/user1.png" alt="Screenshot of bad user" width="500"/>
 
 Här ser vi att användaren har väldigt få rader med rekommendationer. Användare `4616950` med 36 recensioner är bättre lämpad. Jag såg även till att manuellt sätta med användaren i mitt testdata. 
 
@@ -142,6 +143,8 @@ Jag behövde också fixa en bugg där jag fick Precision@k = 0,0% eftersom jag a
 - Värdet ligger på medelnivån. Systemet rekommenderar till synes många spel förutom de mest populära. 
 
 ---
+
+## Reflektion
 
 Att modularisera koden var till hjälp för förståelsen av hur allt sitter ihop och hur systemet fungerar. 
 
