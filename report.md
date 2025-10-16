@@ -14,6 +14,9 @@
 
 ## Process
 
+**Data:**  
+[Dataset - Steam Games](https://www.kaggle.com/datasets/antonkozyriev/game-recommendations-on-steam/data).
+
 ### **Innehållsbaserad filtreringen**  
 Använder sig av spelens olika attribut, så som platform och pris, för att hitta likheter mellan spelen. Tyvärr finns inte genre i mitt data. 
 
