@@ -2,10 +2,6 @@
 
 *Viktor Nylund - Beslutsstödsystem*
 
-- summering, hur gick det
-- resultat, screenshot/kodblock
-- reflektion, jag lärde mig.., jag tycker..,
-
 ## Innehåll
 
 - [Process](#process)
@@ -28,7 +24,7 @@ Jag kombinerar dessa för att skapa ett hybridsystem som använder sig av båda 
 ### **Hybrid rekommendation**
 
 På grund av storleken på users filen (13781059 users) tog programet rätt så länge att köra.  
-Detta var resultaten när jag begränsade det till att endast använda 5 users data. 
+Detta var resultaten när jag begränsade det till att endast använda 50 users data. 
 
 <img src="images/out1.png" alt="Screenshot of first output" width="700"/>
 
@@ -87,13 +83,13 @@ Här ser vi att användaren har väldigt få rader med rekommendationer. Använd
 
 <img src="images/out4.png" alt="Screenshot of content based output" width="500"/>
 
-Skillnaden beror endast på att det nu printar 10 rekommendationer, som det borde göra. Annars är 
+- Skillnaden beror endast på att det nu printar 10 rekommendationer, som det borde göra. Annars är 
 
 **Kollaborativ rekommendation**
 
 <img src="images/out5.png" alt="Screenshot of collaborative output" width="500"/>
 
-Här ser vi helt andra typer av spel, som borde vara helt baserade på användarens tidigare recensioner. 
+- Här ser vi helt andra typer av spel, som borde vara helt baserade på användarens tidigare recensioner. 
 
 **Andra Hybrid (fixad)**
 
@@ -110,25 +106,44 @@ Här syns 7 nya spel, vilket är som förväntat från `alpha = 0.7`.
 
 ## Evaluering
 
-För evalueringen behövde jag öka antalet iterationer från 200 upp till 500 och mängen data ner till 42k från 60k för att få bättre convergence. Då tog träningen och evaluearingen märkbart längre tid, nu över 30 minuter.  
+För evalueringen behövde jag öka antalet iterationer från 200 upp till 500 för att få bättre convergence. Träningen och evaluearingen tillsammans tog märkbart längre tid, nu över **2 timmar**.  
 Jag övervägde att byta till `solver='cd'`, men den påstås vara mer lämpad för tät data utan stor variation. Det skulle alltså antagligen inte vara bättre, trots att den vore snabbare. `solver='mu'` är bättre lämpad för data som har "a lot of variety or sparsity".  
 Enligt AI vore `init='nndsvda'` betydligt snabbare och också ge bättre rekommendationer. Därför böt jag till det och träningen tar nu .  
-Jag minskade även `n_components` till 15 från 20, vilket borde göra det snabbare men lite mindre "detaljerade" rekommendationer.
-Träningen når maximala antalet iterationer väldigt snabbt och får alltså inte bättre convergence. 
+För att minska på träningstiden och evalueringen minskade jag mängden data ner till ~7k från 70k. 
+Det tog nu endast 20 minuter.  
+Jag behövde också fixa en bugg där jag fick Precision@k = 0,0% eftersom jag använda hela `recommendations_df` istället för bara `test_df`.
 
 <img src="images/res1.png" alt="Screenshot of final hybrid output" width="500"/>
 
-Största delen av spelen är samma som tidigare, men den nya modellen har hittat 2 nya spel att rekommendera.
+- Största delen av spelen är samma som tidigare, men den nya modellen har hittat 2 nya spel att rekommendera.
 
-| Mått                   | Värde      | Förändring   |
-|------------------------|------------|--------------|
-| Användare              | 13,781,059 | -            |
-| >=10 rekommendationer  | 766,519    | -509,880     |
-| Kombinerad data        | 784,240    | -520,001     |
-| Unika användare        | 41,986     | -27,975      |
+| Mått                   | Värde     | Förändring  |
+|------------------------|-----------|-------------|
+| Användare              | 13,781,059| -           |
+| >=10 rekommendationer  | 130,365   | -1,146,034  |
+| Kombinerad data        | 133,483   | -1,171,758  |
+| Unika användare        | 7,001     | -62,960     |
 
+<img src="images/res2.png" alt="Screenshot of final hybrid evaluation" width="300"/>
+
+| Utvärdering    | Värde         |
+|----------------|---------------|
+| Precision@10   | 0.0244, 2.44% |
+| Coverage       | 0.0069, 0.69% |
+| Novelty        | 5.0547        |
+
+**Precision@10**
+- ~2,4% är ett väldigt lågt värde. Systemet rekommenderar sällan rekommenderar spel som användaren tyckt om. Modellen hade behövt tränas på ett större data.
+
+**Coverage (täckning)**
+- En täckning på ~0,7% är också mycket låg. Systemet rekommenderar endast ett litet antal populära spel utav bibliotekets alla spel. Det är typiskt för kollaborativ filtrering men modellen behöver helt klart större träningsdata.
+
+**Novelty**
+- Värdet ligger på medelnivån. Systemet rekommenderar till synes många spel förutom de mest populära. 
 
 ---
+
+Att modularisera koden var till hjälp för förståelsen av hur allt sitter ihop och hur systemet fungerar. 
 
 Projektet var ett intressant sätt att slå ihop de senaste par projekten. Förstås hade det varit betydligt mer krävande ifall de uppgifterna inte hade gått så bra, men å andra sidan fick vi kod för det mesta förutom evalueringen.
 
