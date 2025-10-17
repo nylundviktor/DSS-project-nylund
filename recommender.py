@@ -315,7 +315,7 @@ if __name__ == '__main__':
     user_counts = recommender.recommendations_df['user_id'].value_counts()
     print(f"User in data: {len(user_counts)}")
     active_users = user_counts[user_counts >= 10].index
-    n1 = 6000
+    n1 = 30000
     filtered_sample = active_users.to_series().sample(n=n1, random_state=42)
     filtered_sample = pd.concat([filtered_sample, pd.Series([test_user_id])]).drop_duplicates()
     filtered_recommendations = recommender.recommendations_df[
@@ -324,7 +324,7 @@ if __name__ == '__main__':
     print(f"After filtering: {len(filtered_recommendations)}")
     # sample 2, random
     all_users = user_counts.index
-    n2 = 1000
+    n2 = 5000
     random_users = all_users.to_series().sample(n=n2, random_state=42)
     random_sample = recommender.recommendations_df[
         recommender.recommendations_df['user_id'].isin(random_users)

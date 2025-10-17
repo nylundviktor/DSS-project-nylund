@@ -15,7 +15,7 @@
 ## Process
 
 **Data:**  
-[Dataset - Steam Games](https://www.kaggle.com/datasets/antonkozyriev/game-recommendations-on-steam/data).
+[Dataset - Steam Games](https://www.kaggle.com/datasets/antonkozyriev/game-recommendations-on-steam/data)
 
 ### **Innehållsbaserad filtreringen**  
 Använder sig av spelens olika attribut, så som platform och pris, för att hitta likheter mellan spelen. Tyvärr finns inte genre i mitt data. 
@@ -136,14 +136,28 @@ Jag behövde också fixa en bugg där jag fick Precision@k = 0,0% eftersom jag a
 | Coverage       | 0.0069, 0.69% |
 | Novelty        | 5.0547        |
 
-**Precision@10**
+**Precision@10:**
 - ~2,4% är ett väldigt lågt värde. Systemet rekommenderar sällan rekommenderar spel som användaren tyckt om. Modellen hade behövt tränas på ett större data.
 
-**Coverage (täckning)**
+**Coverage (täckning):**
 - En täckning på ~0,7% är också mycket låg. Systemet rekommenderar endast ett litet antal populära spel utav bibliotekets alla spel. Det är typiskt för kollaborativ filtrering men modellen behöver helt klart större träningsdata.
 
-**Novelty**
+**Novelty:**
 - Värdet ligger på medelnivån. Systemet rekommenderar till synes många spel förutom de mest populära. 
+
+--- Evaluation Metrics ---
+Precision@10: 0.0247, 2.47%
+Coverage: 0.0049, 0.49%
+Novelty: 5.1639
+**5 gånger större data:**
+
+| Utvärdering    | Värde         | Diff
+|----------------|---------------|---------|
+| Precision@10   | 0.0247, 2.47% | + 0.03% |
+| Coverage       | 0.0049, 0.49% | - 0.2%  |
+| Novelty        | 5.1639        | + 0.1092|
+
+- Här ser vi att en ökning av datamängden inte hade en speciellt stor inverkan på modellen. 
 
 ---
 
